@@ -12,6 +12,7 @@ router.get('/', function (req, res) {
 });
 
 
+
 // Registration
 router.post('/register', function (req, res) {
     Account.register(new Account({username: req.body.username}),
