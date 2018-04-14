@@ -39,13 +39,13 @@ app.use('/users', usersRouter);
 
 // passport config regular account
 var Account = require('./models/account');
-passport.use(new LocalStrategy(Account.authenticate()));
+passport.use('user', new LocalStrategy(Account.authenticate()));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
-
+//
 // passport config for store owner
 var StoreOwner = require('./models/storeOwner');
-passport.use(new LocalStrategy(StoreOwner.authenticate()));
+passport.use('StoreOwner', new LocalStrategy(StoreOwner.authenticate()));
 passport.serializeUser(StoreOwner.serializeUser());
 passport.deserializeUser(StoreOwner.deserializeUser());
 

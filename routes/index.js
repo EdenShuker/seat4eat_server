@@ -55,7 +55,7 @@ router.post('/StoreOwner/register', function (req, res) {
 
 
 // Login
-router.post('/login', passport.authenticate('local'), function (req, res, next) {
+router.post('/login', passport.authenticate('user'), function (req, res, next) {
     var promise = Account.findOne({username: req.user.username}).exec();
     promise.then(function (user) {
         req.session.user_id = user._id;
@@ -69,7 +69,7 @@ router.post('/login', passport.authenticate('local'), function (req, res, next) 
 
 
 // Login for store owner
-router.post('/storeOwner/login', passport.authenticate('local'), function (req, res, next) {
+router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (req, res, next) {
     var promise = StoreOwner.findOne({username: req.user.username}).exec();
     promise.then(function (user) {
         req.session.user_id = user._id;
@@ -83,13 +83,12 @@ router.post('/storeOwner/login', passport.authenticate('local'), function (req, 
 
 
 // Add Deal
-router.post('/storeOwner/addDeal', checkAuth, function (req, res) {
-    // var time = req.body.time;
-    // var img = req.body.img;
+router.post('/storeOwner/addDeal', checkAuthOwner, function (req, res) {
     var deal = new Deal({
         storeOwnerID: req.session.user_id,
+        storeID: req.body.storeID,
         details: req.body.details,
-        time:  req.body.time,
+        time: req.body.time,
         img: req.body.img
     });
     deal.save(function (err) {
@@ -98,23 +97,15 @@ router.post('/storeOwner/addDeal', checkAuth, function (req, res) {
     });
 });
 
-//
-// // Get Deals of specific store owner
-// router.get('/deals/perStore', checkAuth, function (req, res) {
-//     var promise = Account.findOne({username: req.query['name']}).exec();
-//     promise.then(function (seller){
-//         Deal.find({storeOwnerID: seller._id}).exec().then(
-//             function (deals) {
-//                 console.log(deals);
-//                 res.send(deals);
-//             }
-//         );
-//     });
-//
-// });
 
-
-// TODO: Get Deals by time
+router.get('/deals', checkAuth, function (req, res) {
+    Deal.find({}).exec().then(
+        function (deals) {
+            console.log(deals);
+            res.send(deals);
+        }
+    );
+});
 
 
 // Logout
@@ -124,6 +115,11 @@ router.get('/logout', checkAuth, function (req, res) {
     res.send('logout');
 });
 
+router.get('/storeOwner/logout', checkAuthOwner, function (req, res) {
+    delete req.session.user_id;
+    req.logout();
+    res.send('logout');
+});
 
 function checkAuth(req, res, next) {
     if (!req.session.user_id) {
@@ -132,5 +128,22 @@ function checkAuth(req, res, next) {
         next();
     }
 }
+
+function checkAuthOwner(req, res, next) {
+    if (!req.session.user_id) {
+        res.send('You must login first!');
+    } else {
+        var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
+        promise.then(function (user) {
+            if (!user) {
+                res.send("you are not owner");
+            }
+            else {
+                next();
+            }
+        });
+    }
+}
+
 
 module.exports = router;
