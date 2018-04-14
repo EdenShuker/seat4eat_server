@@ -37,11 +37,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-// passport config
+// passport config regular account
 var Account = require('./models/account');
 passport.use(new LocalStrategy(Account.authenticate()));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
+
+// passport config for store owner
+var StoreOwner = require('./models/storeOwner');
+passport.use(new LocalStrategy(StoreOwner.authenticate()));
+passport.serializeUser(StoreOwner.serializeUser());
+passport.deserializeUser(StoreOwner.deserializeUser());
 
 // mongoose
 mongoose.connect('mongodb://localhost:27017/Seat4Eat');
