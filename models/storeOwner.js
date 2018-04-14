@@ -6,7 +6,7 @@ var StoreOwner = new Schema({
     username: {type: String, unique: true},
     password: String,
     email: String,
-    storeID: {type: Schema.ObjectId, ref: 'Store', required: true},
+    storeID: {type: Schema.ObjectId, ref: 'Store'},
     mobile: String,
     isMaster: {type: Boolean, default: false}
 });

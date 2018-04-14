@@ -28,7 +28,7 @@ router.post('/register', function (req, res) {
 
 
 // Registration of store owner user
-router.post('/StoreOwner/register', function (req, res) {
+router.post('/storeOwner/register', function (req, res) {
     var store = new Store({
         name: req.body.storeName,
         location: req.body.location
