@@ -3,7 +3,7 @@ var Schema = mongoose.Schema;
 
 var Deal = new Schema({
     storeOwnerID: {type: Schema.ObjectId, ref: 'StoreOwner', required: true},
-    storeID: {type: Schema.ObjectId, ref: 'Store', required: true},
+    storeID: {type: Schema.ObjectId, ref: 'Store'},
     details: {type: String, required: true},
     time: String,
     imgURL : String
