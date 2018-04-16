@@ -84,27 +84,29 @@ router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (
 
 // Add Deal
 router.post('/storeOwner/addDeal', checkAuthOwner, function (req, res) {
-    var deal = new Deal({
-        storeOwnerID: req.session.user_id,
-        storeID: req.body.storeID,
-        details: req.body.details,
-        time: req.body.time,
-        img: req.body.img
+    var promise = StoreOwner.find({_id: req.session.user_id}).exec();
+    promise.then(function (owner) {
+        var deal = new Deal({
+            storeOwnerID: owner._id,
+            storeID: owner.storeID,
+            details: req.body.details,
+            time: req.body.time,
+            img: req.body.img
+        });
+        deal.save(function (err) {
+            if (err) return console.error(err);
+            res.send('deal added successfully!');
+        });
     });
-    deal.save(function (err) {
-        if (err) return console.error(err);
-        res.send('deal added successfully!');
-    });
+
 });
 
 
+// Get deals
 router.get('/deals', checkAuth, function (req, res) {
-    Deal.find({}).exec().then(
-        function (deals) {
-            console.log(deals);
-            res.send(deals);
-        }
-    );
+    Deal.find({}).populate({path: 'storeID'}).exec(function (err, deals) {
+        res.send(deals);
+    });
 });
 
 
