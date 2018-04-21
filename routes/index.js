@@ -18,9 +18,9 @@ router.post('/register', function (req, res) {
     Account.register(new Account({username: req.body.username}),
         req.body.password, function (err) {
             if (err) {
-                res.send('error');
+                res.status(400).send('error');
             }
-            passport.authenticate('local')(req, res, function () {
+            passport.authenticate('user')(req, res, function () {
                 res.send('registered successfully')
             });
         });
@@ -42,9 +42,9 @@ router.post('/storeOwner/register', function (req, res) {
                 }),
                 req.body.password, function (err) {
                     if (err) {
-                        res.send('error');
+                        res.status(400).send('error');
                     }
-                    passport.authenticate('local')(req, res, function () {
+                    passport.authenticate('StoreOwner')(req, res, function () {
                         res.send('store registered successfully')
                     });
                 });
