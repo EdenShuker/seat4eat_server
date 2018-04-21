@@ -94,7 +94,7 @@ router.post('/storeOwner/addDeal', checkAuthOwner, function (req, res) {
             img: req.body.img
         });
         deal.save(function (err) {
-            if (err) return console.error(err);
+            if (err) res.status(400).send('error');
             res.send('deal added successfully!');
         });
     });
