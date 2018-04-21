@@ -16,9 +16,9 @@ router.get('/', function (req, res) {
 // Registration of regular user
 router.post('/register', function (req, res) {
     Account.register(new Account({username: req.body.username}),
-        req.body.password, function (err, account) {
+        req.body.password, function (err) {
             if (err) {
-                return res.send('Error: register', {account: account});
+                res.send('error');
             }
             passport.authenticate('local')(req, res, function () {
                 res.send('registered successfully')
@@ -40,9 +40,9 @@ router.post('/storeOwner/register', function (req, res) {
                     username: req.body.username, email: req.body.email,
                     mobile: req.body.mobile, storeID: store1._id
                 }),
-                req.body.password, function (err, storeOwner) {
+                req.body.password, function (err) {
                     if (err) {
-                        return res.send('Error: register', {storeOwner: storeOwner});
+                        res.send('error');
                     }
                     passport.authenticate('local')(req, res, function () {
                         res.send('store registered successfully')
