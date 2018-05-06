@@ -13,6 +13,13 @@ router.get('/', function (req, res) {
 });
 
 
+/************************************* client *************************************/
+/**********************************************************************************/
+/**********************************************************************************/
+/**********************************************************************************/
+/**********************************************************************************/
+
+
 // Registration of regular user
 router.post('/register', function (req, res) {
     Account.register(new Account({username: req.body.username}),
@@ -25,6 +32,53 @@ router.post('/register', function (req, res) {
             });
         });
 });
+
+
+// Login
+router.post('/login', passport.authenticate('user'), function (req, res, next) {
+    var promise = Account.findOne({username: req.user.username}).exec();
+    promise.then(function (user) {
+        req.session.user_id = user._id;
+        // NOTICE: session is saved immediately only if data is sent back to the user
+        // or if it done manually
+
+        // req.session.save();
+        res.send('Yoa are logged in');
+    });
+});
+
+
+// Get deals
+router.get('/deals', checkAuth, function (req, res) {
+    Deal.find({}).populate({path: 'storeID'}).exec(function (err, deals) {
+        if (err) res.status(400).send('error');
+        else res.send(deals);
+    });
+});
+
+
+function checkAuth(req, res, next) {
+    if (!req.session.user_id) {
+        res.send('You must login first!');
+    } else {
+        next();
+    }
+}
+
+
+// Logout
+router.get('/logout', checkAuth, function (req, res) {
+    delete req.session.user_id;
+    req.logout();
+    res.send('logout');
+});
+
+
+/********************************** Store Owner ***********************************/
+/**********************************************************************************/
+/**********************************************************************************/
+/**********************************************************************************/
+/**********************************************************************************/
 
 
 // Registration of store owner user
@@ -54,20 +108,6 @@ router.post('/storeOwner/register', function (req, res) {
 });
 
 
-// Login
-router.post('/login', passport.authenticate('user'), function (req, res, next) {
-    var promise = Account.findOne({username: req.user.username}).exec();
-    promise.then(function (user) {
-        req.session.user_id = user._id;
-        // NOTICE: session is saved immediately only if data is sent back to the user
-        // or if it done manually
-
-        // req.session.save();
-        res.send('Yoa are logged in');
-    });
-});
-
-
 // Login for store owner
 router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (req, res, next) {
     var promise = StoreOwner.findOne({username: req.user.username}).exec();
@@ -84,38 +124,31 @@ router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (
 
 // Add Deal
 router.post('/storeOwner/addDeal', checkAuthOwner, function (req, res) {
-    var promise = StoreOwner.find({_id: req.session.user_id}).exec();
+    var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
     promise.then(function (owner) {
         var deal = new Deal({
             storeOwnerID: owner._id,
             storeID: owner.storeID,
             details: req.body.details,
-            time: req.body.time,
-            img: req.body.img
+            time: req.body.time
         });
         deal.save(function (err) {
             if (err) res.status(400).send('error');
-            res.send('deal added successfully!');
+            else res.send('deal added successfully!');
         });
     });
 
 });
 
-
-// Get deals
-router.get('/deals', checkAuth, function (req, res) {
-    Deal.find({}).populate({path: 'storeID'}).exec(function (err, deals) {
-        res.send(deals);
+// Get deals per store owner
+router.get('/storeOwner/getDeals', checkAuthOwner, function (req, res) {
+    var promise = Deal.find({storeOwnerID: req.session.user_id}).exec();
+    promise.then(function (deals, err) {
+        if (err) res.status(400).send('error');
+        else res.send(deals);
     });
 });
 
-
-// Logout
-router.get('/logout', checkAuth, function (req, res) {
-    delete req.session.user_id;
-    req.logout();
-    res.send('logout');
-});
 
 router.get('/storeOwner/logout', checkAuthOwner, function (req, res) {
     delete req.session.user_id;
@@ -123,13 +156,6 @@ router.get('/storeOwner/logout', checkAuthOwner, function (req, res) {
     res.send('logout');
 });
 
-function checkAuth(req, res, next) {
-    if (!req.session.user_id) {
-        res.send('You must login first!');
-    } else {
-        next();
-    }
-}
 
 function checkAuthOwner(req, res, next) {
     if (!req.session.user_id) {
