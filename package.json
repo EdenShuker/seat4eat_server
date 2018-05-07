@@ -18,6 +18,7 @@
     "passport-local": "latest",
     "express-session": "latest",
     "passport-local-mongoose": "latest",
-    "body-parser": "latest"
+    "body-parser": "latest",
+    "multer": "latest"
   }
 }

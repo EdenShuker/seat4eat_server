@@ -4,6 +4,10 @@ var Account = require('../models/account');
 var Deal = require('../models/deal');
 var StoreOwner = require('../models/storeOwner');
 var Store = require('../models/store');
+var Img = require('../models/image');
+var fs = require('fs');
+var multer = require('multer');
+var mongoose = require('mongoose');
 var router = express.Router();
 
 
@@ -122,23 +126,64 @@ router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (
 });
 
 
-// Add Deal
-router.post('/storeOwner/addDeal', checkAuthOwner, function (req, res) {
-    var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
-    promise.then(function (owner) {
-        var deal = new Deal({
-            storeOwnerID: owner._id,
-            storeID: owner.storeID,
-            details: req.body.details,
-            time: req.body.time
-        });
-        deal.save(function (err) {
-            if (err) res.status(400).send('error');
-            else res.send('deal added successfully!');
-        });
-    });
-
+var upload = multer({
+    dest: 'uploads/'
 });
+
+
+// router.post('/upload', upload.single('userPhoto'), function (req, res) {
+//     var newItem = new Img();
+//     newItem.img.data = fs.readFileSync(req.file.path);
+//     newItem.img.contentType = 'image/jpg';
+//     newItem.save(function (err) {
+//         if (err) res.status(400).send('error');
+//         else res.send('photo uploaded successfully!');
+//     });
+//
+// });
+//
+
+// Add Deal
+router.post('/storeOwner/addDeal', checkAuthOwner, upload.single('userPhoto'), function (req, res) {
+    var newItem = new Img();
+    newItem.img.data = fs.readFileSync(req.file.path);
+    newItem.img.contentType = 'image/jpg';
+    newItem.save(function (err, photo) {
+        if (err) res.status(400).send('error');
+        else {
+            var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
+            promise.then(function (owner) {
+                var deal = new Deal({
+                    storeOwnerID: owner._id,
+                    storeID: owner.storeID,
+                    details: req.body.details,
+                    time: req.body.time,
+                    imgID: photo._id
+                });
+                deal.save(function (err) {
+                    if (err) res.status(400).send('error');
+                    else res.send('deal added successfully!');
+                });
+
+            });
+        }
+    });
+});
+
+
+// Get img by its id
+router.get('/uploads/getImage', function (req, res) {
+    var id = mongoose.Types.ObjectId(req.query.imgID);
+    var promise = Img.findOne({_id: id}).exec();
+    promise.then(function (doc, err) {
+        if (err) res.status(400).send('error');
+        else {
+            res.contentType(doc.img.contentType);
+            res.send(doc.img.data);
+        }
+    });
+});
+
 
 // Get deals per store owner
 router.get('/storeOwner/getDeals', checkAuthOwner, function (req, res) {
