@@ -63,7 +63,7 @@ router.get('/deals', checkAuth, function (req, res) {
 
 function checkAuth(req, res, next) {
     if (!req.session.user_id) {
-        res.send('You must login first!');
+        res.status(401).send('You must login first!');
     } else {
         next();
     }
@@ -144,6 +144,8 @@ router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (
 });
 
 
+
+
 var addDeal = function (deal, res) {
     deal.save(function (err) {
         if (err) res.status(400).send('error');
@@ -168,10 +170,10 @@ router.post('/storeOwner/addDeal', checkAuthOwner, upload.single('userPhoto'), f
                 if (err) res.status(400).send('error');
                 else {
                     deal.imgID = photo._id;
-                    addDeal(deal,res);
+                    addDeal(deal, res);
                 }
             });
-        } else addDeal(deal,res);
+        } else addDeal(deal, res);
     });
 });
 
@@ -209,16 +211,13 @@ router.get('/storeOwner/logout', checkAuthOwner, function (req, res) {
 
 function checkAuthOwner(req, res, next) {
     if (!req.session.user_id) {
-        res.send('You must login first!');
+        // 401 - Unauthorized
+        res.status(401).send('You must login first!');
     } else {
         var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
         promise.then(function (user) {
-            if (!user) {
-                res.send("you are not owner");
-            }
-            else {
-                next();
-            }
+            if (!user) res.status(401).send("you are not owner");
+            else next();
         });
     }
 }
