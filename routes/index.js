@@ -39,7 +39,7 @@ router.post('/register', function (req, res) {
 
 
 // Login
-router.post('/login', passport.authenticate('user'), function (req, res, next) {
+router.post('/login', passport.authenticate('user'), function (req, res) {
     var promise = Account.findOne({username: req.user.username}).exec();
     promise.then(function (user) {
         req.session.user_id = user._id;
@@ -84,36 +84,54 @@ router.get('/logout', checkAuth, function (req, res) {
 /**********************************************************************************/
 /**********************************************************************************/
 
+var upload = multer({
+    dest: 'uploads/'
+});
 
-// Registration of store owner user
-router.post('/storeOwner/register', function (req, res) {
-    var store = new Store({
-        name: req.body.storeName,
-        location: req.body.location
-    });
+// NOTE: when uploading a photo header content type should be "form-data"
+
+var registerStore = function (store, req, res) {
     store.save(function (err, store1) {
-        if (err) return console.error(err);
+        if (err) res.status(400).send('error');
         else {
             StoreOwner.register(new StoreOwner({
                     username: req.body.username, email: req.body.email,
                     mobile: req.body.mobile, storeID: store1._id
                 }),
                 req.body.password, function (err) {
-                    if (err) {
-                        res.status(400).send('error');
-                    }
+                    if (err) res.status(400).send('error');
                     passport.authenticate('StoreOwner')(req, res, function () {
                         res.send('store registered successfully')
                     });
                 });
         }
     });
+};
 
+
+// Registration of store owner user
+router.post('/storeOwner/register', upload.single('userPhoto'), function (req, res) {
+    var store = new Store({
+        name: req.body.storeName,
+        location: req.body.location
+    });
+    if (req.file) {
+        var newItem = new Img();
+        newItem.img.data = fs.readFileSync(req.file.path);
+        newItem.img.contentType = 'image/jpg';
+        newItem.save(function (err, photo) {
+            if (err) res.status(400).send('error');
+            else {
+                store.logoID = photo._id;
+                registerStore(store, req, res);
+            }
+        });
+    } else registerStore(store, req, res);
 });
 
 
 // Login for store owner
-router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (req, res, next) {
+router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (req, res) {
     var promise = StoreOwner.findOne({username: req.user.username}).exec();
     promise.then(function (user) {
         req.session.user_id = user._id;
@@ -126,47 +144,34 @@ router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (
 });
 
 
-var upload = multer({
-    dest: 'uploads/'
-});
-
-
-// router.post('/upload', upload.single('userPhoto'), function (req, res) {
-//     var newItem = new Img();
-//     newItem.img.data = fs.readFileSync(req.file.path);
-//     newItem.img.contentType = 'image/jpg';
-//     newItem.save(function (err) {
-//         if (err) res.status(400).send('error');
-//         else res.send('photo uploaded successfully!');
-//     });
-//
-// });
-//
+var addDeal = function (deal, res) {
+    deal.save(function (err) {
+        if (err) res.status(400).send('error');
+        else res.send('deal added successfully!');
+    });
+};
 
 // Add Deal
 router.post('/storeOwner/addDeal', checkAuthOwner, upload.single('userPhoto'), function (req, res) {
-    var newItem = new Img();
-    newItem.img.data = fs.readFileSync(req.file.path);
-    newItem.img.contentType = 'image/jpg';
-    newItem.save(function (err, photo) {
-        if (err) res.status(400).send('error');
-        else {
-            var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
-            promise.then(function (owner) {
-                var deal = new Deal({
-                    storeOwnerID: owner._id,
-                    storeID: owner.storeID,
-                    details: req.body.details,
-                    time: req.body.time,
-                    imgID: photo._id
-                });
-                deal.save(function (err) {
-                    if (err) res.status(400).send('error');
-                    else res.send('deal added successfully!');
-                });
-
+    var promise = StoreOwner.findOne({_id: req.session.user_id}).exec();
+    promise.then(function (owner) {
+        var deal = new Deal();
+        deal.storeOwnerID = owner._id;
+        deal.storeID = owner.storeID;
+        deal.details = req.body.details;
+        deal.time = req.body.time;
+        if (req.file) {
+            var newItem = new Img();
+            newItem.img.data = fs.readFileSync(req.file.path);
+            newItem.img.contentType = 'image/jpg';
+            newItem.save(function (err, photo) {
+                if (err) res.status(400).send('error');
+                else {
+                    deal.imgID = photo._id;
+                    addDeal(deal,res);
+                }
             });
-        }
+        } else addDeal(deal,res);
     });
 });
 
