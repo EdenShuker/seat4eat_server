@@ -6,19 +6,21 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "bluebird": "latest",
+    "body-parser": "latest",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "express-session": "latest",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
-    "morgan": "~1.9.0",
-    "bluebird": "latest",
-    "passport": "latest",
     "mongoose": "latest",
+    "morgan": "~1.9.0",
+    "multer": "latest",
+    "passport": "latest",
     "passport-local": "latest",
-    "express-session": "latest",
     "passport-local-mongoose": "latest",
-    "body-parser": "latest",
-    "multer": "latest"
+    "redis": "^2.8.0",
+    "is-buffer": "latest"
   }
 }

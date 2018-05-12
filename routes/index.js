@@ -9,6 +9,13 @@ var fs = require('fs');
 var multer = require('multer');
 var mongoose = require('mongoose');
 var router = express.Router();
+var redis = require('redis');
+var client = redis.createClient(); //creates a new client
+var isBuffer = require('is-buffer');
+
+client.on('connect', function () {
+    console.log('connected');
+});
 
 
 /* GET home page. */
@@ -115,6 +122,7 @@ router.post('/storeOwner/register', upload.single('userPhoto'), function (req, r
         name: req.body.storeName,
         location: req.body.location
     });
+    // if image is included
     if (req.file) {
         var newItem = new Img();
         newItem.img.data = fs.readFileSync(req.file.path);
@@ -142,8 +150,6 @@ router.post('/storeOwner/login', passport.authenticate('StoreOwner'), function (
         res.send('Yoa are logged in');
     });
 });
-
-
 
 
 var addDeal = function (deal, res) {
@@ -180,13 +186,27 @@ router.post('/storeOwner/addDeal', checkAuthOwner, upload.single('userPhoto'), f
 
 // Get img by its id
 router.get('/uploads/getImage', function (req, res) {
-    var id = mongoose.Types.ObjectId(req.query.imgID);
-    var promise = Img.findOne({_id: id}).exec();
-    promise.then(function (doc, err) {
+    var imgID = req.query.imgID;
+    var id = mongoose.Types.ObjectId(imgID);
+    client.get(imgID, function (err, reply) {
         if (err) res.status(400).send('error');
+        //Img exist in cache
+        else if (reply) {
+            var obj = JSON.parse(reply);
+            var buffer = Buffer.from(obj.data);
+            res.contentType(obj.contentType);
+            res.send(buffer);
+        }
+        //Img doesn't exist in cache
         else {
-            res.contentType(doc.img.contentType);
-            res.send(doc.img.data);
+            Img.findOne({_id: id}).exec().then(function (doc, err) {
+                if (err) res.status(400).send('error');
+                else {
+                    res.contentType(doc.img.contentType);
+                    res.send(doc.img.data);
+                    client.set(imgID, JSON.stringify(doc.img));
+                }
+            });
         }
     });
 });
