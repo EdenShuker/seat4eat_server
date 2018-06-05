@@ -11,7 +11,7 @@ var mongoose = require('mongoose');
 var router = express.Router();
 var redis = require('redis');
 var client = redis.createClient(); //creates a new client
-var isBuffer = require('is-buffer');
+
 
 client.on('connect', function () {
     console.log('connected');
@@ -218,6 +218,24 @@ router.get('/storeOwner/getDeals', checkAuthOwner, function (req, res) {
     promise.then(function (deals, err) {
         if (err) res.status(400).send('error');
         else res.send(deals);
+    });
+});
+
+
+// delete deal by id
+router.post('/storeOwner/deleteDeal', checkAuthOwner, function (req, res) {
+    Deal.remove({ _id: req.body.id }, function(err) {
+        if (err) res.status(500).send('error');
+        else res.status(200).send('deal deleted successfully');
+    });
+});
+
+
+// delete all deals
+router.get('/storeOwner/deleteAllDeals', checkAuthOwner, function (req, res) {
+    Deal.remove({}, function(err) {
+        if (err) res.status(500).send('error');
+        else res.status(200).send('all deals deleted');
     });
 });
 
