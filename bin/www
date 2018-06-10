@@ -3,10 +3,24 @@
 /**
  * Module dependencies.
  */
-
+const fs = require('fs');
 var app = require('../app');
 var debug = require('debug')('seat4eat:server');
 var http = require('http');
+var https = require('https');
+
+
+// Certificate
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/dealsapp.online/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/dealsapp.online/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/dealsapp.online/chain.pem', 'utf8');
+
+
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca
+};
 
 /**
  * Get port from environment and store in Express.
@@ -14,13 +28,16 @@ var http = require('http');
 
 // var port = normalizePort(process.env.PORT || '3000');
 var port = normalizePort(process.env.PORT || '80');
+var port_https = normalizePort(process.env.PORT || '443');
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
+// Starting both http & https servers
 var server = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -29,6 +46,10 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+httpsServer.listen(port_https);
+httpsServer.on('error', onError);
+httpsServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
