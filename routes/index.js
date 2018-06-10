@@ -18,6 +18,8 @@ client.on('connect', function () {
 });
 
 
+
+
 /* GET home page. */
 router.get('/', function (req, res) {
     res.send('Hello Liav!');
