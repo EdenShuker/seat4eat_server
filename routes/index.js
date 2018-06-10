@@ -167,6 +167,7 @@ router.post('/storeOwner/addDeal', checkAuthOwner, upload.single('userPhoto'), f
         var deal = new Deal();
         deal.storeOwnerID = owner._id;
         deal.storeID = owner.storeID;
+        deal.preview = req.body.preview;
         deal.details = req.body.details;
         deal.time = req.body.time;
         if (req.file) {
