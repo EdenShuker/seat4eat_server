@@ -38,7 +38,7 @@ app.set('port', port);
 
 // Starting both http & https servers
 var server = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
+// const httpsServer = https.createServer(credentials, app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -48,9 +48,9 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
-httpsServer.listen(443, function() {
-    console.log('HTTPS Server running on port 443');
-});
+// httpsServer.listen(443, function() {
+//     console.log('HTTPS Server running on port 443');
+// });
 
 // httpsServer.listen(port_https);
 // httpsServer.on('error', onError);
