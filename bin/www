@@ -28,7 +28,6 @@ const credentials = {
 
 // var port = normalizePort(process.env.PORT || '3000');
 var port = normalizePort(process.env.PORT || '80');
-// var port_https = normalizePort(process.env.PORT || '443');
 app.set('port', port);
 
 
@@ -52,9 +51,6 @@ httpsServer.listen(443, function() {
     console.log('HTTPS Server running on port 443');
 });
 
-// httpsServer.listen(port_https);
-// httpsServer.on('error', onError);
-// httpsServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.

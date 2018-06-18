@@ -7,7 +7,8 @@ var Deal = new Schema({
     preview:{type: String, required: true},
     details: {type: String, required: true},
     time: String,
-    imgID:{type: Schema.ObjectId, ref: 'Image'}
+    imgID:{type: Schema.ObjectId, ref: 'Image'},
+    path: String
 });
 
 module.exports = mongoose.model('Deal', Deal);

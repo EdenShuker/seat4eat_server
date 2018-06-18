@@ -28,7 +28,7 @@ app.use(require('express-session')({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: false,
-    cookie: {maxAge: 60000}
+    cookie: {maxAge: 24 * 60 * 60 * 1000 * 365}  // a year
 }));
 
 app.use(passport.initialize());

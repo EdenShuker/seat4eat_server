@@ -178,6 +178,7 @@ router.post('/storeOwner/addDeal', checkAuthOwner, upload.single('userPhoto'), f
                 if (err) res.status(400).send('error');
                 else {
                     deal.imgID = photo._id;
+                    deal.path = 'images/'+ req.file.originalname;
                     addDeal(deal, res);
                 }
             });
