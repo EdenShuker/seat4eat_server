@@ -217,7 +217,7 @@ router.get('/uploads/getImage', function (req, res) {
 
 // Get deals per store owner
 router.get('/storeOwner/getDeals', checkAuthOwner, function (req, res) {
-    var promise = Deal.find({storeOwnerID: req.session.user_id}).exec();
+    var promise = Deal.find({storeOwnerID: req.session.user_id}).populate({path: 'storeID'}).exec();
     promise.then(function (deals, err) {
         if (err) res.status(400).send('error');
         else res.send(deals);
